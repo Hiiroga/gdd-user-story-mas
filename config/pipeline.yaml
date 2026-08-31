@@ -1,0 +1,39 @@
+# Preprocessing pipeline configuration
+# All values below can be overridden per experiment by copying this file into
+# experiments/{name}/experiment_config.yaml and editing the copy.
+
+chunking:
+  # Maximum tokens per chunk. Agents consume one chunk at a time so this must
+  # fit within the chosen LLM's context window with room for the system prompt
+  # and generated output.  Adjust once OPEN-002 (model choice) is resolved.
+  max_chunk_tokens: 1500
+
+  # Number of tokens from the end of chunk N to repeat at the start of chunk N+1.
+  # 0 = no overlap (current default; OPEN-013 unresolved).
+  overlap_tokens: 0
+
+  # Sentence splitter to use.  Only "nltk" is currently implemented.
+  sentence_splitter: "nltk"
+
+segmentation:
+  # Minimum character length for a heading candidate line.
+  min_heading_length: 2
+  # Maximum character length for a heading candidate line.
+  max_heading_length: 120
+
+  # Regex patterns (Python syntax) tried in priority order.
+  # A line is classified as a heading if ANY pattern matches.
+  heading_patterns:
+    - '^#{1,6}\s+\S'                        # Markdown headings:  ## Section Title
+    - '^\d+(\.\d+)*\.?\s+[A-Z]'            # Numbered:           1.2 Combat System
+    - '^[A-Z][A-Z\s\-]{4,}$'               # ALL CAPS short:     GAME OVERVIEW
+    - '^(Chapter|Section|Part)\s+\d+'       # Explicit keywords:  Chapter 3
+
+language_detection:
+  # If True, abort ingestion when non-English content is detected.
+  # If False, log a warning and continue (matches VAL-003 "flag not reject").
+  reject_non_english: false
+
+logging:
+  # Log level written to run.log.  DEBUG | INFO | WARNING | ERROR
+  level: "INFO"

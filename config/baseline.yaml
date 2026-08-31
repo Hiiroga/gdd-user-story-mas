@@ -1,0 +1,63 @@
+# Baseline pipeline configuration
+# This file governs ONLY the single-agent baseline (C10).
+# MAS agents will have their own per-agent config once implemented.
+#
+# Fairness controls (NFR-006, SRS-015):
+#   - model.provider and model.name must match what is used for MAS agents.
+#   - temperature must be identical to MAS agent temperature.
+#   - max_retries and retry_backoff_seconds apply identically.
+#   - invocation_strategy is OPEN-016 resolved here as "per_chunk" (same
+#     granularity as MAS per-chunk Reader agent calls).
+
+model:
+  # LLM provider adapter to use.  Supported values: openai | anthropic | gemini
+  # Must match the LLM used for MAS agents (FR-027, OPEN-002).
+  provider: "openai"
+
+  # Model name/version.  Must be frozen before running experiments (NFR-008).
+  # Change this to the exact model version agreed with supervisor.
+  name: "gpt-4o"
+
+  # Inference parameters — kept identical to MAS agent settings for fairness.
+  # temperature=0 maximises reproducibility (Technical Architecture §14, §11 item 2).
+  temperature: 0
+  max_tokens: 2048
+  # top_p left at provider default (null = provider default; do not set independently
+  # from temperature=0 as combined sampling parameters interact non-trivially).
+  top_p: null
+
+  # Structured output / response format.
+  # "json_object" — use provider JSON mode where available (recommended, Tech Arch §13.3).
+  # "text"        — fall back to prompt-engineered JSON + parse.
+  response_format: "json_object"
+
+invocation:
+  # OPEN-016 resolution: "per_chunk" — one LLM call per preprocessed GDDChunk.
+  # This is identical in granularity to the MAS Reader Agent (one call per chunk),
+  # ensuring the baseline is not disadvantaged by receiving less context per call.
+  # Do NOT change to "whole_document" without updating the fairness analysis.
+  strategy: "per_chunk"
+
+  # Maximum retries on LLM API failure or malformed output (Tech Arch §10).
+  max_retries: 3
+  retry_backoff_seconds: 2
+
+  # Maximum stories to extract per chunk (soft hint to the LLM, not enforced
+  # structurally since the LLM determines how many user stories exist in the text).
+  max_stories_per_chunk: 10
+
+prompt:
+  # Prompt template version (OPEN-004 resolved here).
+  # Update this string whenever the system prompt changes so run logs can
+  # distinguish prompt-version effects from model-version effects.
+  version: "baseline_v1"
+
+  # Path to the system prompt file, relative to the project root.
+  system_prompt_file: "config/prompts/baseline_system_prompt.txt"
+
+output:
+  # pipeline_type tag written to every FinalUserStory (VAL-031).
+  pipeline_type: "Baseline"
+
+  # validation_status default for all baseline stories (no Reviewer exists, FR-025).
+  validation_status_default: "Unreviewed"

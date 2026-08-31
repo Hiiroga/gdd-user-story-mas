@@ -1,0 +1,100 @@
+1. Overview
+===========
+
+Chronicles of Aethermoor is an open-world action-RPG in which the player
+takes on the role of Kira, a disgraced knight who must reclaim her honour
+by saving the kingdom from an ancient magical curse.
+
+The game targets PC and current-generation consoles.  The expected play
+session length is 40–60 hours for the main story.
+
+GAME OVERVIEW
+=============
+
+Genre: Action-RPG
+Target Platform: PC, PlayStation 5, Xbox Series X
+Target Audience: Fans of open-world RPGs aged 16+
+Core Loop: Explore → Combat → Loot → Upgrade → Explore
+
+2. Core Mechanics
+=================
+
+2.1 Combat System
+-----------------
+
+The player engages enemies using a real-time, action-based combat system.
+Controls are responsive and allow for fluid combos.
+
+The player character has the following combat abilities:
+- Light Attack: fast, low-damage strike.
+- Heavy Attack: slow, high-damage strike with a brief charge animation.
+- Dodge: iframe-based evasion in any direction.
+- Block: parries incoming attacks if timed correctly, staggering the enemy.
+
+Enemy AI will adapt to the player's playstyle over time. If the player
+consistently uses heavy attacks, enemies will increase their guard frequency.
+
+2.2 Progression System
+-----------------------
+
+Kira gains experience points (XP) by defeating enemies, completing quests,
+and exploring new areas.  On level-up, the player receives skill points.
+
+Skill points can be spent in three skill trees:
+  1. Sword Mastery — increases melee damage and unlocks combo attacks.
+  2. Arcane Arts — grants access to elemental spells and mana pool upgrades.
+  3. Shadow Step — improves stealth and unlocks assassination skills.
+
+3. World Design
+===============
+
+3.1 Hub World: The City of Aethermoor
+---------------------------------------
+
+Aethermoor serves as the primary hub. It contains:
+- The Blacksmith: allows weapon upgrades and crafting.
+- The Market: a dynamic economy where item prices fluctuate based on
+  player supply and demand.
+- The Tavern: quest board and NPC social interactions.
+- The Royal Archives: lore repository and fast-travel unlock map.
+
+Players can purchase property in Aethermoor to use as a personal base.
+
+3.2 Regions
+-----------
+
+The world contains five explorable regions:
+1. The Verdant Plains — starting area, low-difficulty enemies, tutorial quests.
+2. The Ashwood Forest — mid-game area, stealth-focused encounters.
+3. The Iron Wastes — high-difficulty area, stronghold sieges.
+4. The Sunken Depths — underwater exploration with pressure-management mechanic.
+5. The Aether Rift — endgame area, boss encounters, final story act.
+
+4. User Interface
+=================
+
+4.1 HUD
+-------
+
+The HUD displays the following information:
+- Health bar (top-left): Kira's current and maximum HP.
+- Mana bar (top-left, below HP): current and maximum mana.
+- Stamina bar (bottom-centre): depletes on dodge, sprint, and heavy attacks.
+- Mini-map (top-right): shows nearby enemies, landmarks, and quest markers.
+- Active quest tracker (right side): shows the current objective text.
+
+4.2 Inventory Screen
+--------------------
+
+The inventory is a grid-based system.  Items are represented by icon tiles.
+Equipment slots are shown on a character silhouette on the left panel.
+The player can compare items by hovering over them.
+
+5. Audio Design
+===============
+
+Music adapts dynamically to the game state using a layered soundtrack system.
+Combat music triggers when an enemy enters the player's detection radius.
+Ambient music fades in during exploration.
+
+Sound effects are spatially positioned to support 3D audio environments.

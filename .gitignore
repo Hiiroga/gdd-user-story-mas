@@ -1,0 +1,45 @@
+# GDD User Story MAS — .gitignore
+
+# ─── Secrets ──────────────────────────────────────────────────────────────────
+.env
+
+# ─── Python ───────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+*.whl
+*.so
+
+# ─── Virtual environments ──────────────────────────────────────────────────────
+.venv/
+venv/
+env/
+.env/
+
+# ─── Testing / coverage ───────────────────────────────────────────────────────
+.pytest_cache/
+.coverage
+htmlcov/
+coverage.xml
+*.cover
+
+# ─── Type checking ────────────────────────────────────────────────────────────
+.mypy_cache/
+.ruff_cache/
+
+# ─── Research data & outputs (large, data-not-code) ───────────────────────────
+outputs/
+logs/
+datasets/raw/
+datasets/manifest.json
+
+# ─── OS noise ─────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
