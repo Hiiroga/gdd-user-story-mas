@@ -241,12 +241,16 @@ class BaselineAgent:
         """
         Render the system prompt template with chunk-specific context
         (chapter, section, position).
+
+        Uses explicit str.replace() instead of .format() to avoid KeyError
+        when the prompt template contains JSON examples with curly braces.
         """
-        return self._system_prompt_template.format(
-            chapter=chunk.chapter or "Unknown",
-            section=chunk.section or "Unknown",
-            position=chunk.position + 1,
-            total_chunks=total_chunks,
+        return (
+            self._system_prompt_template
+            .replace("{chapter}", chunk.chapter or "Unknown")
+            .replace("{section}", chunk.section or "Unknown")
+            .replace("{position}", str(chunk.position + 1))
+            .replace("{total_chunks}", str(total_chunks))
         )
 
     def _build_user_message(self, chunk: GDDChunk) -> str:

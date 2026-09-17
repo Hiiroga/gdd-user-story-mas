@@ -106,6 +106,7 @@ class LLMClient:
         response_format: str = "json_object",
         max_retries: int = 3,
         retry_backoff_seconds: float = 2.0,
+        min_request_interval_seconds: float = 0.0,
     ) -> None:
         self.provider = provider.lower()
         self.model_name = model_name
@@ -116,6 +117,8 @@ class LLMClient:
         self.response_format = response_format
         self.max_retries = max_retries
         self.retry_backoff_seconds = retry_backoff_seconds
+        self.min_request_interval_seconds = min_request_interval_seconds
+        self._last_call_time: float = 0.0  # unix timestamp of last successful call
 
         self._client: Any = self._build_client()
 
@@ -129,8 +132,15 @@ class LLMClient:
         """
         Send a system + user message and return a normalised response.
 
-        Retries up to ``max_retries`` times with exponential back-off on
-        transient errors (API failures, timeouts).
+        Handles three retry strategies:
+
+        - **429 RESOURCE_EXHAUSTED**: waits the retryDelay from the API
+          response, then retries. Does NOT consume ``max_retries`` budget.
+        - **503 UNAVAILABLE** (model overloaded): waits longer, also does NOT
+          consume ``max_retries`` budget.
+        - **All other errors**: exponential back-off, capped at ``max_retries``.
+
+        Also throttles to ``min_request_interval_seconds`` between calls.
 
         Raises
         ------
@@ -142,30 +152,66 @@ class LLMClient:
         """
         last_exc: Optional[Exception] = None
         backoff = self.retry_backoff_seconds
+        regular_attempts = 0  # only counts non-429/503 failures
 
-        for attempt in range(1, self.max_retries + 1):
+        # ── Per-call throttle ───────────────────────────────────────────────
+        if self.min_request_interval_seconds > 0:
+            elapsed = time.time() - self._last_call_time
+            wait = self.min_request_interval_seconds - elapsed
+            if wait > 0:
+                logger.debug("Rate-limit throttle: sleeping %.1fs", wait)
+                time.sleep(wait)
+
+        while True:
+            regular_attempts += 1
             try:
                 logger.debug(
-                    "LLM call attempt %d/%d (provider=%s, model=%s)",
-                    attempt, self.max_retries, self.provider, self.model_name,
+                    "LLM call attempt %d (provider=%s, model=%s)",
+                    regular_attempts, self.provider, self.model_name,
                 )
                 response = self._dispatch(system_prompt, user_message)
+                self._last_call_time = time.time()
                 logger.debug(
                     "LLM call succeeded: prompt_tokens=%d, completion_tokens=%d, finish=%s",
                     response.prompt_tokens, response.completion_tokens, response.finish_reason,
                 )
                 return response
             except (LLMAPIError, LLMMalformedOutputError):
-                raise  # don't retry on schema errors — they need a different prompt
+                raise  # schema errors need a different prompt
             except Exception as exc:  # noqa: BLE001
+                exc_str = str(exc)
+
+                # ── 429 RESOURCE_EXHAUSTED — wait and retry, free attempt ──
+                retry_after = _parse_retry_after(exc)
+                if retry_after is not None:
+                    logger.warning(
+                        "429 rate-limit — API requests %.0fs wait. Sleeping (free retry)…",
+                        retry_after,
+                    )
+                    time.sleep(retry_after + 2)
+                    regular_attempts -= 1  # restore — 429 is not our error
+                    continue
+
+                # ── 503 UNAVAILABLE — model overloaded, wait and free retry ─
+                if "503" in exc_str or "UNAVAILABLE" in exc_str:
+                    wait_503 = min(backoff * 4, 120)
+                    logger.warning(
+                        "503 model overloaded — sleeping %.0fs (free retry)…", wait_503,
+                    )
+                    time.sleep(wait_503)
+                    regular_attempts -= 1  # restore
+                    continue
+
+                # ── Regular failure — counts against max_retries ───────────
                 last_exc = exc
                 logger.warning(
                     "LLM call attempt %d/%d failed: %s. Retrying in %.1fs…",
-                    attempt, self.max_retries, exc, backoff,
+                    regular_attempts, self.max_retries, exc, backoff,
                 )
-                if attempt < self.max_retries:
-                    time.sleep(backoff)
-                    backoff *= 2  # exponential back-off
+                if regular_attempts >= self.max_retries:
+                    break
+                time.sleep(backoff)
+                backoff *= 2
 
         raise LLMAPIError(
             f"All {self.max_retries} LLM call attempts failed. "
@@ -205,14 +251,11 @@ class LLMClient:
 
         if self.provider == "gemini":
             try:
-                import google.generativeai as genai  # noqa: PLC0415
-                if self.api_key:
-                    genai.configure(api_key=self.api_key)
-                return genai.GenerativeModel(self.model_name)
+                from google import genai  # noqa: PLC0415
+                return genai.Client(api_key=self.api_key)
             except ImportError as exc:
                 raise ImportError(
-                    "google-generativeai SDK not installed. "
-                    "Run: pip install google-generativeai"
+                    "google-genai SDK not installed. Run: pip install google-genai>=1.0"
                 ) from exc
 
         raise LLMAPIError(f"Unknown provider: '{self.provider}'")
@@ -277,22 +320,48 @@ class LLMClient:
         )
 
     def _call_gemini(self, system_prompt: str, user_message: str) -> LLMResponse:
-        """Call Google Gemini API (stub — expand when provider is confirmed)."""
-        # Combine system and user for Gemini (no system-message support in basic API)
-        combined = f"{system_prompt}\n\n---\n\n{user_message}"
-        raw = self._client.generate_content(combined)
+        """Call Google Gemini API using the new google-genai SDK (>=1.0)."""
+        from google.genai import types  # noqa: PLC0415
+
+        # Build generation config
+        gen_config_kwargs: Dict[str, Any] = {
+            "temperature": self.temperature,
+            "max_output_tokens": self.max_tokens,
+            "system_instruction": system_prompt,
+        }
+        if self.top_p is not None:
+            gen_config_kwargs["top_p"] = self.top_p
+
+        # Request JSON output when json_object mode is set
+        if self.response_format == "json_object":
+            gen_config_kwargs["response_mime_type"] = "application/json"
+
+        config = types.GenerateContentConfig(**gen_config_kwargs)
+
+        raw = self._client.models.generate_content(
+            model=self.model_name,
+            contents=user_message,
+            config=config,
+        )
+
         content = raw.text or ""
 
         if self.response_format == "json_object":
             _validate_json(content)
 
-        # Gemini usage metadata varies; use 0 as placeholder
+        # Extract token usage (available in usage_metadata)
+        prompt_tokens = 0
+        completion_tokens = 0
+        if hasattr(raw, "usage_metadata") and raw.usage_metadata:
+            prompt_tokens = getattr(raw.usage_metadata, "prompt_token_count", 0) or 0
+            completion_tokens = getattr(raw.usage_metadata, "candidates_token_count", 0) or 0
+
         return LLMResponse(
             content=content,
             model_name=self.model_name,
-            prompt_tokens=0,
-            completion_tokens=0,
-            finish_reason="stop",
+            prompt_tokens=prompt_tokens,
+            completion_tokens=completion_tokens,
+            finish_reason=str(raw.candidates[0].finish_reason) if raw.candidates else "stop",
             raw_response=raw,
         )
 
@@ -322,3 +391,47 @@ def _validate_json(content: str) -> None:
             f"LLM returned non-JSON content when JSON mode was requested: "
             f"{content[:200]!r}"
         ) from exc
+
+
+def _parse_retry_after(exc: Exception) -> Optional[float]:
+    """
+    Extract the suggested retry delay (in seconds) from a 429 error.
+
+    Tries in order:
+    1. ``exc.details`` list → looks for a ``RetryInfo`` entry with
+       ``retryDelay`` (Google genai SDK format).
+    2. String search in ``str(exc)`` for ``"Please retry in Xs"`` pattern.
+
+    Returns ``None`` if the exception is not a 429 or no delay is found.
+    """
+    import re  # noqa: PLC0415
+
+    exc_str = str(exc)
+
+    # Only apply to 429 errors
+    if "429" not in exc_str and "RESOURCE_EXHAUSTED" not in exc_str:
+        return None
+
+    # Strategy 1: parse from structured details (google-genai SDK)
+    try:
+        details = getattr(exc, "details", None) or []
+        if isinstance(details, list):
+            for detail in details:
+                if isinstance(detail, dict):
+                    delay_str = detail.get("retryDelay", "")
+                    if delay_str:
+                        # e.g. "58s" or "58.13s"
+                        m = re.search(r"([\d.]+)s?$", str(delay_str))
+                        if m:
+                            return float(m.group(1))
+    except Exception:  # noqa: BLE001
+        pass
+
+    # Strategy 2: parse from error message string
+    # e.g. "Please retry in 58.130224109s."
+    m = re.search(r"[Rr]etry in ([\d.]+)s", exc_str)
+    if m:
+        return float(m.group(1))
+
+    # Fallback: generic 429 — wait 60s
+    return 60.0

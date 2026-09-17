@@ -89,6 +89,12 @@ class BaselineConfig:
     pipeline_type: str = "Baseline"
     validation_status_default: str = "Unreviewed"
 
+    # Rate limiting
+    min_request_interval_seconds: float = 13.0
+    """Minimum seconds between LLM calls (throttle to stay under RPM quota).
+    Free tier for Gemini = 5 RPM → 60/5 = 12s minimum; use 13s for safety.
+    Set to 0.0 to disable (e.g. for paid tier with higher RPM)."""
+
     @classmethod
     def from_yaml(cls, yaml_path: str | Path, project_root: Path = Path(".")) -> "BaselineConfig":
         """Load a ``BaselineConfig`` from ``config/baseline.yaml``."""
@@ -117,6 +123,7 @@ class BaselineConfig:
             ),
             pipeline_type=output.get("pipeline_type", "Baseline"),
             validation_status_default=output.get("validation_status_default", "Unreviewed"),
+            min_request_interval_seconds=float(inv.get("min_request_interval_seconds", 13.0)),
         )
 
     @classmethod
@@ -269,6 +276,7 @@ class BaselinePipeline:
                 response_format=self._config.response_format,
                 max_retries=self._config.max_retries,
                 retry_backoff_seconds=self._config.retry_backoff_seconds,
+                min_request_interval_seconds=self._config.min_request_interval_seconds,
             )
         except ImportError as exc:
             err = self._make_error(rid, document_id, "llm_api_failure", str(exc), "run_halted")
