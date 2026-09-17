@@ -1,0 +1,45 @@
+# MAS pipeline configuration
+# Controls all MAS agents (C4–C9).
+#
+# Fairness controls (NFR-006, SRS-015):
+#   - model.provider and model.name MUST match config/baseline.yaml.
+#   - temperature MUST be identical to baseline temperature.
+#   - max_retries and retry_backoff_seconds apply identically.
+#
+# Each agent reads from this shared config. If an agent ever needs
+# a different model (not currently planned), add a per-agent override section.
+
+model:
+  # LLM provider adapter.  Supported: openai | anthropic | gemini
+  # Must match baseline.yaml provider (FR-027, OPEN-002).
+  provider: "gemini"
+
+  # Model name. Must be frozen before running experiments (NFR-008).
+  # Must match baseline.yaml model.name for experimental fairness.
+  name: "gemini-flash-latest"
+
+  # Inference parameters — IDENTICAL to baseline for fairness (NFR-006).
+  temperature: 0
+  max_tokens: 4096
+  top_p: null
+
+  # Structured output format.
+  response_format: "json_object"
+
+invocation:
+  # Maximum retries on LLM API failure (Tech Arch §10).
+  max_retries: 5
+  retry_backoff_seconds: 2
+
+  # Minimum seconds between consecutive LLM calls per agent instance.
+  # Free tier Gemini = 5 RPM → 60s / 5 = 12s minimum. Use 13s for safety.
+  # Set to 0.0 for paid tier.
+  min_request_interval_seconds: 13
+
+  # Seconds to wait on 503 UNAVAILABLE before retrying.
+  wait_on_overload_seconds: 60
+
+reader_agent:
+  # Prompt template version — update when prompt file changes (OPEN-004).
+  prompt_version: "reader_v1"
+  system_prompt_file: "config/prompts/reader_system_prompt.txt"

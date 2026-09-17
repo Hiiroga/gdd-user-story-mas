@@ -107,6 +107,7 @@ class LLMClient:
         max_retries: int = 3,
         retry_backoff_seconds: float = 2.0,
         min_request_interval_seconds: float = 0.0,
+        wait_on_overload_seconds: float = 60.0,
     ) -> None:
         self.provider = provider.lower()
         self.model_name = model_name
@@ -118,6 +119,7 @@ class LLMClient:
         self.max_retries = max_retries
         self.retry_backoff_seconds = retry_backoff_seconds
         self.min_request_interval_seconds = min_request_interval_seconds
+        self.wait_on_overload_seconds = wait_on_overload_seconds
         self._last_call_time: float = 0.0  # unix timestamp of last successful call
 
         self._client: Any = self._build_client()
@@ -194,11 +196,11 @@ class LLMClient:
 
                 # ── 503 UNAVAILABLE — model overloaded, wait and free retry ─
                 if "503" in exc_str or "UNAVAILABLE" in exc_str:
-                    wait_503 = min(backoff * 4, 120)
                     logger.warning(
-                        "503 model overloaded — sleeping %.0fs (free retry)…", wait_503,
+                        "503 model overloaded — sleeping %.0fs (free retry)…",
+                        self.wait_on_overload_seconds,
                     )
-                    time.sleep(wait_503)
+                    time.sleep(self.wait_on_overload_seconds)
                     regular_attempts -= 1  # restore
                     continue
 
