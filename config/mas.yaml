@@ -43,3 +43,15 @@ reader_agent:
   # Prompt template version — update when prompt file changes (OPEN-004).
   prompt_version: "reader_v1"
   system_prompt_file: "config/prompts/reader_system_prompt.txt"
+
+analyst_agent:
+  # Prompt template version — update when prompt file changes (OPEN-004).
+  prompt_version: "analyst_v1"
+  system_prompt_file: "config/prompts/analyst_system_prompt.txt"
+
+generator_agent:
+  # Prompt template version — update when prompt file changes (OPEN-004).
+  prompt_version: "generator_v1"
+  # Smaller max_tokens: one story per call is short.
+  max_tokens: 1024
+  system_prompt_file: "config/prompts/generator_system_prompt.txt"
