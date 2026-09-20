@@ -10,10 +10,8 @@ Schemas implemented here cover:
   - MAS Analyst Agent output (§5 CandidateRequirement, AnalystOutput)
   - MAS Generator Agent output (§6 GeneratedUserStory)
   - MAS Reviewer Agent output (§7 ReviewerResult, §8 ReviewerFeedback)
+  - MAS Redundancy Checker output (§9 RedundancyAnalysis)
   - Baseline and shared terminal output (§10, §12, §13)
-
-MAS-only intermediate schemas (RedundancyAnalysis §9) will be added
-when the corresponding agent is implemented.
 """
 from gdd_userstory_mas.schemas.gdd_document import GDDDocument
 from gdd_userstory_mas.schemas.gdd_metadata import GDDMetadata, TOCEntry
@@ -33,6 +31,11 @@ from gdd_userstory_mas.schemas.reviewer_result import (
     ReviewerFeedback,
     CriterionType,
     VALID_CRITERIA,
+)
+from gdd_userstory_mas.schemas.redundancy_analysis import (
+    RedundancyAnalysis,
+    DuplicateGroup,
+    MergeAction,
 )
 from gdd_userstory_mas.schemas.final_user_story import (
     FinalUserStory,
@@ -59,9 +62,13 @@ __all__ = [
     "ReviewerFeedback",
     "CriterionType",
     "VALID_CRITERIA",
+    "RedundancyAnalysis",
+    "DuplicateGroup",
+    "MergeAction",
     "FinalUserStory",
     "ConfidenceEvidence",
     "MergeHistoryEntry",
     "ExperimentRun",
 ]
+
 

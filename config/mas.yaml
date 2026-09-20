@@ -62,3 +62,13 @@ reviewer_agent:
   # Moderate max_tokens: verdict + feedback text.
   max_tokens: 2048
   system_prompt_file: "config/prompts/reviewer_system_prompt.txt"
+
+redundancy_agent:
+  # Prompt template version — update when prompt file changes (OPEN-004).
+  prompt_version: "redundancy_v1"
+  # Larger max_tokens: processes the full story collection.
+  max_tokens: 4096
+  system_prompt_file: "config/prompts/redundancy_system_prompt.txt"
+  # Maximum re-check passes before flagging as unresolved (OPEN-006).
+  max_resolution_passes: 2
+
