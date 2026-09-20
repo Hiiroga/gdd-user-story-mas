@@ -55,3 +55,10 @@ generator_agent:
   # Smaller max_tokens: one story per call is short.
   max_tokens: 1024
   system_prompt_file: "config/prompts/generator_system_prompt.txt"
+
+reviewer_agent:
+  # Prompt template version — update when prompt file changes (OPEN-004).
+  prompt_version: "reviewer_v1"
+  # Moderate max_tokens: verdict + feedback text.
+  max_tokens: 2048
+  system_prompt_file: "config/prompts/reviewer_system_prompt.txt"
