@@ -16,7 +16,7 @@ model:
 
   # Model name. Must be frozen before running experiments (NFR-008).
   # Must match baseline.yaml model.name for experimental fairness.
-  name: "gemini-flash-latest"
+  name: "gemini-3.5-flash-lite"
 
   # Inference parameters — IDENTICAL to baseline for fairness (NFR-006).
   temperature: 0
@@ -32,9 +32,9 @@ invocation:
   retry_backoff_seconds: 2
 
   # Minimum seconds between consecutive LLM calls per agent instance.
-  # Free tier Gemini = 5 RPM → 60s / 5 = 12s minimum. Use 13s for safety.
+  # Free tier Gemini 3.5 Flash Lite = 15 RPM → 60s / 15 = 4s minimum. Use 5s for safety.
   # Set to 0.0 for paid tier.
-  min_request_interval_seconds: 13
+  min_request_interval_seconds: 5
 
   # Seconds to wait on 503 UNAVAILABLE before retrying.
   wait_on_overload_seconds: 60

@@ -16,7 +16,7 @@ model:
 
   # Model name/version.  Must be frozen before running experiments (NFR-008).
   # Change this to the exact model version agreed with supervisor.
-  name: "gemini-flash-latest"
+  name: "gemini-3.5-flash-lite"
 
   # Inference parameters — kept identical to MAS agent settings for fairness.
   # temperature=0 maximises reproducibility (Technical Architecture §14, §11 item 2).
@@ -40,9 +40,9 @@ invocation:
   max_retries: 5
   retry_backoff_seconds: 2
 
-  # Minimum seconds between LLM calls (free tier = 5 RPM).
+  # Minimum seconds between LLM calls (free tier = 15 RPM).
   # Set to 0.0 jika pakai paid tier.
-  min_request_interval_seconds: 13
+  min_request_interval_seconds: 5
 
   # Seconds to wait on 503 "model overloaded" before retrying.
   # Nilai lebih besar = lebih sabar saat server Gemini sibuk.

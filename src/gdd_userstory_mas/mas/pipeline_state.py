@@ -19,7 +19,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Dict, List, Optional
 
-from gdd_userstory_mas.schemas.analyst_output import AnalystOutput
+from gdd_userstory_mas.schemas.candidate_requirement import AnalystOutput
 from gdd_userstory_mas.schemas.error_failure_log import ErrorFailureLog
 from gdd_userstory_mas.schemas.evaluation_result import EvaluationResult
 from gdd_userstory_mas.schemas.experiment_run import ExperimentRun
@@ -31,7 +31,7 @@ from gdd_userstory_mas.schemas.redundancy_analysis import RedundancyAnalysis
 
 
 # Canonical stage names (aligned with StageType in ErrorFailureLog)
-STAGE_PREPROCESSING = "preprocessing"
+STAGE_PREPROCESSING = "chunking"
 STAGE_READER = "gdd_reader"
 STAGE_ANALYST = "requirements_analyst"
 STAGE_GENERATOR = "user_story_generator"

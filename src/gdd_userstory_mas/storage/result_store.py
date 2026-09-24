@@ -39,7 +39,7 @@ import logging
 from pathlib import Path
 from typing import List, Optional
 
-from gdd_userstory_mas.schemas.analyst_output import AnalystOutput
+from gdd_userstory_mas.schemas.candidate_requirement import AnalystOutput
 from gdd_userstory_mas.schemas.error_failure_log import ErrorFailureLog
 from gdd_userstory_mas.schemas.evaluation_result import EvaluationResult
 from gdd_userstory_mas.schemas.experiment_run import ExperimentRun

@@ -17,8 +17,8 @@ import pytest
 from gdd_userstory_mas.mas.pipeline import MASPipeline, MASPipelineError
 from gdd_userstory_mas.mas.pipeline_config import MASPipelineConfig
 from gdd_userstory_mas.mas.pipeline_result import MASPipelineResult
-from gdd_userstory_mas.schemas.analyst_output import AnalystOutput
 from gdd_userstory_mas.schemas.candidate_requirement import (
+    AnalystOutput,
     CandidateRequirement,
 )
 from gdd_userstory_mas.schemas.generated_user_story import GeneratedUserStory
@@ -37,6 +37,9 @@ from gdd_userstory_mas.schemas.evaluation_result import EvaluationResult
 # Fixtures / builders
 # ─────────────────────────────────────────────────────────────────────────────
 
+# Real project root — needed for agents to find their prompt files
+_PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent.parent
+
 def _make_config(tmp_path: Path, max_iterations: int = 3) -> MASPipelineConfig:
     """Return a MASPipelineConfig with no-op defaults and disk I/O to tmp_path."""
     from gdd_userstory_mas.mas.pipeline_config import MASPipelineConfig
@@ -53,12 +56,12 @@ def _make_config(tmp_path: Path, max_iterations: int = 3) -> MASPipelineConfig:
         output_dir=tmp_path / "outputs",
         logs_dir=tmp_path / "logs",
         save_intermediate=False,
-        reader_config=ReaderAgentConfig(min_request_interval_seconds=0.0),
-        analyst_config=AnalystAgentConfig(min_request_interval_seconds=0.0),
-        generator_config=GeneratorAgentConfig(min_request_interval_seconds=0.0),
-        reviewer_config=ReviewerAgentConfig(min_request_interval_seconds=0.0),
-        redundancy_config=RedundancyAgentConfig(min_request_interval_seconds=0.0),
-        evaluator_config=EvaluatorAgentConfig(min_request_interval_seconds=0.0),
+        reader_config=ReaderAgentConfig(),
+        analyst_config=AnalystAgentConfig(),
+        generator_config=GeneratorAgentConfig(),
+        reviewer_config=ReviewerAgentConfig(),
+        redundancy_config=RedundancyAgentConfig(),
+        evaluator_config=EvaluatorAgentConfig(),
         preprocessing_config=PreprocessingConfig.defaults(),
     )
 
@@ -67,11 +70,10 @@ def _make_chunk(i: int = 0, document_id: str = "doc1") -> GDDChunk:
     return GDDChunk(
         chunk_id=f"{document_id}__chunk_{i:04d}",
         document_id=document_id,
-        section_title=f"Section {i}",
+        section=f"Section {i}",
         text=f"The player can attack enemies. Feature {i}.",
+        position=i,
         token_count=20,
-        chunk_index=i,
-        total_chunks=1,
     )
 
 
@@ -81,7 +83,7 @@ def _make_reader_output(chunk: GDDChunk) -> ReaderOutput:
         chunk_id=chunk.chunk_id,
         document_id=chunk.document_id,
         gameplay_elements=[
-            EvidencedItem(text="attack enemies", source_quote="player can attack")
+            EvidencedItem(content="attack enemies", source_excerpt="player can attack")
         ],
         systems=[],
         characters=[],
@@ -96,16 +98,14 @@ def _make_analyst_output(chunk: GDDChunk, n: int = 1) -> AnalystOutput:
     for i in range(n):
         candidates.append(CandidateRequirement(
             candidate_id=f"{chunk.chunk_id}__cand_{i:04d}",
-            chunk_id=chunk.chunk_id,
+            source_chunk_id=chunk.chunk_id,
             document_id=chunk.document_id,
             perspective="player",
             domain="gameplay",
             requirement_text=f"Player attacks enemies (variant {i})",
-            evidence_text="player can attack",
-            confidence=0.9,
         ))
     return AnalystOutput(
-        chunk_id=chunk.chunk_id,
+        source_chunk_id=chunk.chunk_id,
         document_id=chunk.document_id,
         candidates=candidates,
     )
@@ -113,9 +113,9 @@ def _make_analyst_output(chunk: GDDChunk, n: int = 1) -> AnalystOutput:
 
 def _make_draft(candidate: CandidateRequirement, iteration: int = 0) -> GeneratedUserStory:
     return GeneratedUserStory(
-        draft_id=f"{candidate.candidate_id}__draft_iter{iteration}",
+        draft_id=f"{candidate.candidate_id}__draft",
         candidate_id=candidate.candidate_id,
-        source_chunk_id=candidate.chunk_id,
+        source_chunk_id=candidate.source_chunk_id,
         document_id=candidate.document_id,
         role="player",
         action="attack enemies with melee weapons",
@@ -130,22 +130,21 @@ def _make_draft(candidate: CandidateRequirement, iteration: int = 0) -> Generate
 
 def _make_valid_reviewer_result(draft: GeneratedUserStory) -> ReviewerResult:
     return ReviewerResult(
-        review_id=f"{draft.draft_id}__review",
+        review_id=f"{draft.draft_id}__review_iter0",
         draft_id=draft.draft_id,
         status="Valid",
+        evaluated_at_iteration=draft.iteration_count,
         failing_criteria=[],
-        overall_verdict="All criteria passed.",
     )
 
 
 def _make_invalid_reviewer_result(draft: GeneratedUserStory) -> ReviewerResult:
-    from gdd_userstory_mas.schemas.reviewer_result import ReviewerResult
     return ReviewerResult(
-        review_id=f"{draft.draft_id}__review",
+        review_id=f"{draft.draft_id}__review_iter0",
         draft_id=draft.draft_id,
         status="Invalid",
-        failing_criteria=["semantic_clarity"],
-        overall_verdict="Story is unclear.",
+        evaluated_at_iteration=draft.iteration_count,
+        failing_criteria=["clarity"],
     )
 
 
@@ -180,11 +179,14 @@ def _make_evaluation_result(run_id: str, story_count: int) -> EvaluationResult:
 
 def _make_pipeline(tmp_path: Path, max_iterations: int = 3) -> MASPipeline:
     config = _make_config(tmp_path, max_iterations)
-    return MASPipeline(
-        config=config,
-        api_key=None,
-        project_root=tmp_path,
-    )
+    # Patch LLMClient so agents don't try to validate API key on __init__
+    with patch("gdd_userstory_mas.baseline.llm_client.LLMClient.__init__", return_value=None):
+        pipeline = MASPipeline(
+            config=config,
+            api_key="test-key-placeholder",
+            project_root=_PROJECT_ROOT,
+        )
+    return pipeline
 
 
 # ─────────────────────────────────────────────────────────────────────────────

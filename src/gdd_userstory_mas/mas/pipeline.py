@@ -504,7 +504,7 @@ class MASPipeline:
             )
             return None
 
-        val_report = validate_analyst_output(analyst_output)
+        val_report = validate_analyst_output(analyst_output, reader_output)
         if not val_report.passed:
             msg = (
                 f"Analyst output validation FAILED for chunk {chunk.chunk_id}: "
@@ -556,6 +556,7 @@ class MASPipeline:
         feedback: Optional[ReviewerFeedback] = None
         iteration = 0
         max_iter = self._config.max_reviewer_iterations
+        draft_chain: List[str] = []
 
         while iteration < max_iter:
             # ── Generate ───────────────────────────────────────────────────────
@@ -563,7 +564,7 @@ class MASPipeline:
                 draft = self._generator.generate(
                     candidate,
                     iteration_count=iteration,
-                    reviewer_feedback=feedback,
+                    previous_draft_id_chain=draft_chain,
                 )
             except Exception as exc:  # noqa: BLE001
                 self._log_candidate_error(
@@ -606,7 +607,7 @@ class MASPipeline:
                 return
 
             # Reviewer schema validation
-            rev_report = validate_reviewer_output(result, draft)
+            rev_report = validate_reviewer_output(result, feedback, draft)
             if not rev_report.passed:
                 run_log.warning(
                     STAGE_REVIEWER,
@@ -646,6 +647,7 @@ class MASPipeline:
                 return
 
             # ── Invalid — try next iteration ───────────────────────────────────
+            draft_chain.append(draft.draft_id)
             iteration += 1
 
         # ── Max iterations exhausted ───────────────────────────────────────────
