@@ -37,7 +37,7 @@ invocation:
   min_request_interval_seconds: 5
 
   # Seconds to wait on 503 UNAVAILABLE before retrying.
-  wait_on_overload_seconds: 60
+  wait_on_overload_seconds: 10
 
 reader_agent:
   # Prompt template version — update when prompt file changes (OPEN-004).

@@ -46,7 +46,7 @@ invocation:
 
   # Seconds to wait on 503 "model overloaded" before retrying.
   # Nilai lebih besar = lebih sabar saat server Gemini sibuk.
-  wait_on_overload_seconds: 60
+  wait_on_overload_seconds: 10
 
   # Maximum stories to extract per chunk (soft hint to the LLM).
   max_stories_per_chunk: 10

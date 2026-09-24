@@ -19,6 +19,11 @@ import json
 from pathlib import Path
 from datetime import datetime
 
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+if hasattr(sys.stderr, "reconfigure"):
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+
 # ── Load .env ──────────────────────────────────────────────────────────────────
 try:
     from dotenv import load_dotenv
@@ -39,11 +44,26 @@ if not API_KEY:
 print(f"✓ Provider: {PROVIDER}")
 print(f"✓ API key: {API_KEY[:8]}...{API_KEY[-4:]}")
 
-# ── Tentukan file GDD ──────────────────────────────────────────────────────────
-if len(sys.argv) > 1:
-    GDD_FILE = Path(sys.argv[1])
-else:
-    GDD_FILE = Path("datasets/raw/doombible.pdf")
+import argparse
+
+# ── Tentukan file GDD & Argumen ────────────────────────────────────────────────
+parser = argparse.ArgumentParser(description="Run Single-Agent Baseline Pipeline")
+parser.add_argument(
+    "gdd_path",
+    nargs="?",
+    default=Path("datasets/raw/doombible.pdf"),
+    type=Path,
+    help="Path ke file GDD (default: datasets/raw/doombible.pdf)",
+)
+parser.add_argument(
+    "--max-chunks",
+    type=int,
+    default=None,
+    help="Batasi pemrosesan hanya pada N chunk pertama (misal untuk perbandingan adil dengan MAS)",
+)
+args = parser.parse_args()
+
+GDD_FILE = args.gdd_path
 
 if not GDD_FILE.exists():
     print(f"❌ ERROR: File GDD tidak ditemukan: {GDD_FILE}")
@@ -84,6 +104,8 @@ try:
         output_dir=OUTPUT_DIR,
     )
     pre_result = preprocessing.run(GDD_FILE)
+    if args.max_chunks is not None:
+        pre_result.chunks = pre_result.chunks[:args.max_chunks]
 
     print(f"✓ Preprocessing selesai:")
     print(f"  - Document ID : {pre_result.document.document_id}")
