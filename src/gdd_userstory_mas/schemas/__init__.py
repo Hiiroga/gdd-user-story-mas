@@ -11,7 +11,10 @@ Schemas implemented here cover:
   - MAS Generator Agent output (§6 GeneratedUserStory)
   - MAS Reviewer Agent output (§7 ReviewerResult, §8 ReviewerFeedback)
   - MAS Redundancy Checker output (§9 RedundancyAnalysis)
-  - Baseline and shared terminal output (§10, §12, §13)
+  - Terminal output (§10 FinalUserStory)
+  - Evaluator Agent output (§11 EvaluationResult)
+  - Experiment tracking (§12 ExperimentRun)
+  - Error logging (§13 ErrorFailureLog)
 """
 from gdd_userstory_mas.schemas.gdd_document import GDDDocument
 from gdd_userstory_mas.schemas.gdd_metadata import GDDMetadata, TOCEntry
@@ -42,6 +45,11 @@ from gdd_userstory_mas.schemas.final_user_story import (
     ConfidenceEvidence,
     MergeHistoryEntry,
 )
+from gdd_userstory_mas.schemas.evaluation_result import (
+    EvaluationResult,
+    MetricDetail,
+    AQUSADetail,
+)
 from gdd_userstory_mas.schemas.experiment_run import ExperimentRun
 
 __all__ = [
@@ -68,7 +76,11 @@ __all__ = [
     "FinalUserStory",
     "ConfidenceEvidence",
     "MergeHistoryEntry",
+    "EvaluationResult",
+    "MetricDetail",
+    "AQUSADetail",
     "ExperimentRun",
 ]
+
 
 

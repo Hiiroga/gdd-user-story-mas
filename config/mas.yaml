@@ -72,3 +72,30 @@ redundancy_agent:
   # Maximum re-check passes before flagging as unresolved (OPEN-006).
   max_resolution_passes: 2
 
+evaluator_agent:
+  # Smaller max_tokens: hallucination check responses are short.
+  max_tokens: 512
+  hallucination_prompt_file: "config/prompts/evaluator_hallucination_prompt.txt"
+  # OPEN-021: whether Redundancy-Unresolved stories count toward redundancy_rate.
+  count_unresolved_in_redundancy: false
+
+orchestration:
+  # Maximum Generator↔Reviewer iterations per candidate (inclusive of initial attempt).
+  # After this limit, the story is flagged Rejected-ManualReview and excluded.
+  max_reviewer_iterations: 3
+
+  # Paths (relative to project root, or absolute).
+  output_dir: "outputs"
+  logs_dir: "logs"
+
+  # Write intermediate results (reader, analyst, generator/reviewer) to disk.
+  # Set false only during unit tests or dry runs to avoid disk I/O.
+  save_intermediate: true
+
+  # If true, abort the entire run when preprocessing yields zero chunks.
+  # If false (default), log a warning and return an empty result.
+  abort_on_empty_chunks: false
+
+  # If true, skip a chunk where the Reader produced zero evidence items.
+  # If false (default), still attempt Analyst (it may find implicit requirements).
+  abort_on_empty_reader: false
