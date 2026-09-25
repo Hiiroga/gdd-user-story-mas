@@ -1,0 +1,927 @@
+{
+  "experiment_id": "compare__73d5386c-ce3c-459a-a03c-8472fe65025f__run-20260924-234638",
+  "document_id": "doombible",
+  "gdd_filename": "doombible.pdf",
+  "mas": {
+    "pipeline_type": "MAS",
+    "run_id": "73d5386c-ce3c-459a-a03c-8472fe65025f",
+    "document_id": "doombible",
+    "total_stories": 0,
+    "total_chunks": 76,
+    "hallucination_rate": {
+      "metric_name": "hallucination_rate",
+      "formula_version": "hallucination_v1_reviewer_traceability",
+      "input_count": 0,
+      "value": null,
+      "numerator": null,
+      "denominator": null,
+      "null_reason": "Empty story collection.",
+      "interpretation": "No stories.",
+      "limitation": "Empty collection.",
+      "annotation_required": false,
+      "annotation_task": null,
+      "raw_observations": []
+    },
+    "redundancy_rate": {
+      "metric_name": "redundancy_rate",
+      "formula_version": "redundancy_v1_mas_checker_groups",
+      "input_count": 0,
+      "value": null,
+      "numerator": null,
+      "denominator": null,
+      "null_reason": "RedundancyAnalysis not provided. MAS pipeline may have produced 0 stories, preventing the Redundancy Checker from running.",
+      "interpretation": "Cannot compute: no RedundancyAnalysis available.",
+      "limitation": "Requires RedundancyAnalysis from MAS pipeline.",
+      "annotation_required": false,
+      "annotation_task": null,
+      "raw_observations": []
+    },
+    "aqusa_score": {
+      "metric_name": "aqusa_score",
+      "formula_version": "aqusa_v1_syntactic_5criteria",
+      "input_count": 0,
+      "value": null,
+      "numerator": null,
+      "denominator": null,
+      "null_reason": "Empty story collection — no stories to evaluate.",
+      "interpretation": "No stories available.",
+      "limitation": "Empty collection.",
+      "annotation_required": false,
+      "annotation_task": null,
+      "raw_observations": []
+    },
+    "coverage": {
+      "metric_name": "coverage",
+      "formula_version": "coverage_v1_chunk_ratio",
+      "input_count": 76,
+      "value": 0.0,
+      "numerator": 0.0,
+      "denominator": 76.0,
+      "null_reason": null,
+      "interpretation": "0 chunks covered — no stories produced.",
+      "limitation": "OPEN-009: Some chunks may legitimately contain no extractable requirements (e.g., title page).",
+      "annotation_required": false,
+      "annotation_task": null,
+      "raw_observations": []
+    },
+    "diversity": {
+      "metric_name": "diversity",
+      "formula_version": "diversity_v1_category_ratio",
+      "input_count": 0,
+      "value": null,
+      "numerator": null,
+      "denominator": null,
+      "null_reason": "Empty story collection.",
+      "interpretation": "No stories available.",
+      "limitation": "Empty collection.",
+      "annotation_required": false,
+      "annotation_task": null,
+      "raw_observations": []
+    },
+    "model_config_snapshot": {},
+    "prompt_config_snapshot": {},
+    "pipeline_output_ref": "outputs\\73d5386c-ce3c-459a-a03c-8472fe65025f",
+    "evaluated_at": "2026-09-25T03:43:15.203724+00:00"
+  },
+  "baseline": {
+    "pipeline_type": "Baseline",
+    "run_id": "run-20260924-234638",
+    "document_id": "34136ab8-1cfd-4728-a81f-4b421bd1c86f",
+    "total_stories": 23,
+    "total_chunks": 76,
+    "hallucination_rate": {
+      "metric_name": "hallucination_rate",
+      "formula_version": "hallucination_v2_source_excerpt_keyword",
+      "input_count": 23,
+      "value": 0.0,
+      "numerator": 0.0,
+      "denominator": 23.0,
+      "null_reason": null,
+      "interpretation": "0/23 verifiable stories (0.0%) have <30% action keyword overlap with their source chunk, indicating potential hallucination. (0 unverifiable.)",
+      "limitation": "Lexical heuristic: keyword overlap threshold=30%. Stories using paraphrasing or broad domain knowledge will be over-flagged. For ground-truth hallucination judgments, see HUMAN_ANNOTATION_TASKS.",
+      "annotation_required": false,
+      "annotation_task": "hallucination_ground_truth",
+      "raw_observations": [
+        {
+          "story_id": "US-0001",
+          "value": false,
+          "detail": "Action keyword overlap with source: 57.14% (threshold=30%) → SUPPORTED. Action tokens: ['and', 'contents', 'game', 'specifications', 'table']..."
+        },
+        {
+          "story_id": "US-0002",
+          "value": false,
+          "detail": "Action keyword overlap with source: 80.00% (threshold=30%) → SUPPORTED. Action tokens: ['command', 'configure', 'doom', 'line', 'parameters']..."
+        },
+        {
+          "story_id": "US-0003",
+          "value": false,
+          "detail": "Action keyword overlap with source: 66.67% (threshold=30%) → SUPPORTED. Action tokens: ['and', 'demo', 'experience', 'intro', 'loop']..."
+        },
+        {
+          "story_id": "US-0004",
+          "value": false,
+          "detail": "Action keyword overlap with source: 50.00% (threshold=30%) → SUPPORTED. Action tokens: ['access', 'control', 'panel', 'the']..."
+        },
+        {
+          "story_id": "US-0005",
+          "value": false,
+          "detail": "Action keyword overlap with source: 40.00% (threshold=30%) → SUPPORTED. Action tokens: ['engage', 'loop', 'play', 'the', 'with']..."
+        },
+        {
+          "story_id": "US-0006",
+          "value": false,
+          "detail": "Action keyword overlap with source: 50.00% (threshold=30%) → SUPPORTED. Action tokens: ['end', 'game', 'reach', 'the']..."
+        },
+        {
+          "story_id": "US-0007",
+          "value": false,
+          "detail": "Action keyword overlap with source: 40.00% (threshold=30%) → SUPPORTED. Action tokens: ['and', 'episodes', 'explore', 'maps', 'multiple']..."
+        },
+        {
+          "story_id": "US-0008",
+          "value": false,
+          "detail": "Action keyword overlap with source: 75.00% (threshold=30%) → SUPPORTED. Action tokens: ['and', 'items', 'utilize', 'weapons']..."
+        },
+        {
+          "story_id": "US-0009",
+          "value": false,
+          "detail": "Action keyword overlap with source: 75.00% (threshold=30%) → SUPPORTED. Action tokens: ['and', 'appendices', 'extensions', 'file', 'glossary']..."
+        },
+        {
+          "story_id": "US-0010",
+          "value": false,
+          "detail": "Action keyword overlap with source: 80.00% (threshold=30%) → SUPPORTED. Action tokens: ['and', 'bugs', 'known', 'track', 'unfixed']..."
+        },
+        {
+          "story_id": "US-0011",
+          "value": false,
+          "detail": "Action keyword overlap with source: 83.33% (threshold=30%) → SUPPORTED. Action tokens: ['bugs', 'doom', 'parameter', 'run', 'the']..."
+        },
+        {
+          "story_id": "US-0012",
+          "value": false,
+          "detail": "Action keyword overlap with source: 83.33% (threshold=30%) → SUPPORTED. Action tokens: ['doom', 'mem', 'parameter', 'run', 'the']..."
+        },
+        {
+          "story_id": "US-0013",
+          "value": false,
+          "detail": "Action keyword overlap with source: 83.33% (threshold=30%) → SUPPORTED. Action tokens: ['doom', 'episode', 'parameter', 'run', 'the']..."
+        },
+        {
+          "story_id": "US-0014",
+          "value": false,
+          "detail": "Action keyword overlap with source: 83.33% (threshold=30%) → SUPPORTED. Action tokens: ['doom', 'level', 'parameter', 'run', 'the']..."
+        },
+        {
+          "story_id": "US-0015",
+          "value": false,
+          "detail": "Action keyword overlap with source: 83.33% (threshold=30%) → SUPPORTED. Action tokens: ['doom', 'end', 'parameter', 'run', 'the']..."
+        },
+        {
+          "story_id": "US-0016",
+          "value": false,
+          "detail": "Action keyword overlap with source: 83.33% (threshold=30%) → SUPPORTED. Action tokens: ['doom', 'lothar', 'parameter', 'run', 'the']..."
+        },
+        {
+          "story_id": "US-0017",
+          "value": false,
+          "detail": "Action keyword overlap with source: 83.33% (threshold=30%) → SUPPORTED. Action tokens: ['backdoor', 'doom', 'parameter', 'run', 'the']..."
+        },
+        {
+          "story_id": "US-0018",
+          "value": false,
+          "detail": "Action keyword overlap with source: 83.33% (threshold=30%) → SUPPORTED. Action tokens: ['doom', 'instore', 'parameter', 'run', 'the']..."
+        },
+        {
+          "story_id": "US-0019",
+          "value": false,
+          "detail": "Action keyword overlap with source: 83.33% (threshold=30%) → SUPPORTED. Action tokens: ['doom', 'follow', 'parameter', 'run', 'the']..."
+        },
+        {
+          "story_id": "US-0020",
+          "value": false,
+          "detail": "Action keyword overlap with source: 83.33% (threshold=30%) → SUPPORTED. Action tokens: ['diagnostic', 'doom', 'parameter', 'run', 'the']..."
+        },
+        {
+          "story_id": "US-0021",
+          "value": false,
+          "detail": "Action keyword overlap with source: 83.33% (threshold=30%) → SUPPORTED. Action tokens: ['bubbies', 'doom', 'parameter', 'run', 'the']..."
+        },
+        {
+          "story_id": "US-0022",
+          "value": false,
+          "detail": "Action keyword overlap with source: 83.33% (threshold=30%) → SUPPORTED. Action tokens: ['doom', 'parameter', 'prude', 'run', 'the']..."
+        },
+        {
+          "story_id": "US-0023",
+          "value": false,
+          "detail": "Action keyword overlap with source: 83.33% (threshold=30%) → SUPPORTED. Action tokens: ['doom', 'drunk', 'parameter', 'run', 'the']..."
+        }
+      ]
+    },
+    "redundancy_rate": {
+      "metric_name": "redundancy_rate",
+      "formula_version": "redundancy_v2_jaccard_pairwise_0.7",
+      "input_count": 23,
+      "value": 0.0,
+      "numerator": 0.0,
+      "denominator": 23.0,
+      "null_reason": null,
+      "interpretation": "0/23 stories (0.0%) are in near-duplicate pairs (Jaccard ≥ 0.7 on action+benefit token sets). Near-duplicate pairs found: 0.",
+      "limitation": "Lexical heuristic (Jaccard on tokens, threshold=0.7). May miss paraphrastic duplicates or flag coincidental vocabulary overlap. For ground-truth redundancy, see HUMAN ANNOTATION TASK: redundancy_ground_truth.",
+      "annotation_required": false,
+      "annotation_task": null,
+      "raw_observations": [
+        {
+          "story_id": "US-0001",
+          "value": false,
+          "detail": "No near-duplicate found (Jaccard < 0.7)."
+        },
+        {
+          "story_id": "US-0002",
+          "value": false,
+          "detail": "No near-duplicate found (Jaccard < 0.7)."
+        },
+        {
+          "story_id": "US-0003",
+          "value": false,
+          "detail": "No near-duplicate found (Jaccard < 0.7)."
+        },
+        {
+          "story_id": "US-0004",
+          "value": false,
+          "detail": "No near-duplicate found (Jaccard < 0.7)."
+        },
+        {
+          "story_id": "US-0005",
+          "value": false,
+          "detail": "No near-duplicate found (Jaccard < 0.7)."
+        },
+        {
+          "story_id": "US-0006",
+          "value": false,
+          "detail": "No near-duplicate found (Jaccard < 0.7)."
+        },
+        {
+          "story_id": "US-0007",
+          "value": false,
+          "detail": "No near-duplicate found (Jaccard < 0.7)."
+        },
+        {
+          "story_id": "US-0008",
+          "value": false,
+          "detail": "No near-duplicate found (Jaccard < 0.7)."
+        },
+        {
+          "story_id": "US-0009",
+          "value": false,
+          "detail": "No near-duplicate found (Jaccard < 0.7)."
+        },
+        {
+          "story_id": "US-0010",
+          "value": false,
+          "detail": "No near-duplicate found (Jaccard < 0.7)."
+        },
+        {
+          "story_id": "US-0011",
+          "value": false,
+          "detail": "No near-duplicate found (Jaccard < 0.7)."
+        },
+        {
+          "story_id": "US-0012",
+          "value": false,
+          "detail": "No near-duplicate found (Jaccard < 0.7)."
+        },
+        {
+          "story_id": "US-0013",
+          "value": false,
+          "detail": "No near-duplicate found (Jaccard < 0.7)."
+        },
+        {
+          "story_id": "US-0014",
+          "value": false,
+          "detail": "No near-duplicate found (Jaccard < 0.7)."
+        },
+        {
+          "story_id": "US-0015",
+          "value": false,
+          "detail": "No near-duplicate found (Jaccard < 0.7)."
+        },
+        {
+          "story_id": "US-0016",
+          "value": false,
+          "detail": "No near-duplicate found (Jaccard < 0.7)."
+        },
+        {
+          "story_id": "US-0017",
+          "value": false,
+          "detail": "No near-duplicate found (Jaccard < 0.7)."
+        },
+        {
+          "story_id": "US-0018",
+          "value": false,
+          "detail": "No near-duplicate found (Jaccard < 0.7)."
+        },
+        {
+          "story_id": "US-0019",
+          "value": false,
+          "detail": "No near-duplicate found (Jaccard < 0.7)."
+        },
+        {
+          "story_id": "US-0020",
+          "value": false,
+          "detail": "No near-duplicate found (Jaccard < 0.7)."
+        },
+        {
+          "story_id": "US-0021",
+          "value": false,
+          "detail": "No near-duplicate found (Jaccard < 0.7)."
+        },
+        {
+          "story_id": "US-0022",
+          "value": false,
+          "detail": "No near-duplicate found (Jaccard < 0.7)."
+        },
+        {
+          "story_id": "US-0023",
+          "value": false,
+          "detail": "No near-duplicate found (Jaccard < 0.7)."
+        }
+      ]
+    },
+    "aqusa_score": {
+      "metric_name": "aqusa_score",
+      "formula_version": "aqusa_v1_syntactic_5criteria",
+      "input_count": 23,
+      "value": 100.0,
+      "numerator": 23.0,
+      "denominator": 23.0,
+      "null_reason": null,
+      "interpretation": "23/23 stories (100.0%) meet all 5 AQUSA syntactic criteria.",
+      "limitation": "Criterion 5 (ambiguity) is a heuristic regex — may produce false positives. Syntactic only; does not assess semantic quality.",
+      "annotation_required": false,
+      "annotation_task": null,
+      "raw_observations": [
+        {
+          "story_id": "US-0001",
+          "value": true,
+          "detail": "PASS"
+        },
+        {
+          "story_id": "US-0002",
+          "value": true,
+          "detail": "PASS"
+        },
+        {
+          "story_id": "US-0003",
+          "value": true,
+          "detail": "PASS"
+        },
+        {
+          "story_id": "US-0004",
+          "value": true,
+          "detail": "PASS"
+        },
+        {
+          "story_id": "US-0005",
+          "value": true,
+          "detail": "PASS"
+        },
+        {
+          "story_id": "US-0006",
+          "value": true,
+          "detail": "PASS"
+        },
+        {
+          "story_id": "US-0007",
+          "value": true,
+          "detail": "PASS"
+        },
+        {
+          "story_id": "US-0008",
+          "value": true,
+          "detail": "PASS"
+        },
+        {
+          "story_id": "US-0009",
+          "value": true,
+          "detail": "PASS"
+        },
+        {
+          "story_id": "US-0010",
+          "value": true,
+          "detail": "PASS"
+        },
+        {
+          "story_id": "US-0011",
+          "value": true,
+          "detail": "PASS"
+        },
+        {
+          "story_id": "US-0012",
+          "value": true,
+          "detail": "PASS"
+        },
+        {
+          "story_id": "US-0013",
+          "value": true,
+          "detail": "PASS"
+        },
+        {
+          "story_id": "US-0014",
+          "value": true,
+          "detail": "PASS"
+        },
+        {
+          "story_id": "US-0015",
+          "value": true,
+          "detail": "PASS"
+        },
+        {
+          "story_id": "US-0016",
+          "value": true,
+          "detail": "PASS"
+        },
+        {
+          "story_id": "US-0017",
+          "value": true,
+          "detail": "PASS"
+        },
+        {
+          "story_id": "US-0018",
+          "value": true,
+          "detail": "PASS"
+        },
+        {
+          "story_id": "US-0019",
+          "value": true,
+          "detail": "PASS"
+        },
+        {
+          "story_id": "US-0020",
+          "value": true,
+          "detail": "PASS"
+        },
+        {
+          "story_id": "US-0021",
+          "value": true,
+          "detail": "PASS"
+        },
+        {
+          "story_id": "US-0022",
+          "value": true,
+          "detail": "PASS"
+        },
+        {
+          "story_id": "US-0023",
+          "value": true,
+          "detail": "PASS"
+        }
+      ]
+    },
+    "coverage": {
+      "metric_name": "coverage",
+      "formula_version": "coverage_v1_chunk_ratio",
+      "input_count": 76,
+      "value": 2.631578947368421,
+      "numerator": 2.0,
+      "denominator": 76.0,
+      "null_reason": null,
+      "interpretation": "2/76 GDD chunks (2.6%) have ≥1 final story referencing them.",
+      "limitation": "OPEN-009: Some chunks may legitimately have no extractable requirements. All chunks are counted in the denominator.",
+      "annotation_required": false,
+      "annotation_task": null,
+      "raw_observations": [
+        {
+          "story_id": "US-0001",
+          "value": [
+            "34136ab8-1cfd-4728-a81f-4b421bd1c86f__chunk_0000"
+          ],
+          "detail": "Covers chunks: ['34136ab8-1cfd-4728-a81f-4b421bd1c86f__chunk_0000']"
+        },
+        {
+          "story_id": "US-0002",
+          "value": [
+            "34136ab8-1cfd-4728-a81f-4b421bd1c86f__chunk_0000"
+          ],
+          "detail": "Covers chunks: ['34136ab8-1cfd-4728-a81f-4b421bd1c86f__chunk_0000']"
+        },
+        {
+          "story_id": "US-0003",
+          "value": [
+            "34136ab8-1cfd-4728-a81f-4b421bd1c86f__chunk_0000"
+          ],
+          "detail": "Covers chunks: ['34136ab8-1cfd-4728-a81f-4b421bd1c86f__chunk_0000']"
+        },
+        {
+          "story_id": "US-0004",
+          "value": [
+            "34136ab8-1cfd-4728-a81f-4b421bd1c86f__chunk_0000"
+          ],
+          "detail": "Covers chunks: ['34136ab8-1cfd-4728-a81f-4b421bd1c86f__chunk_0000']"
+        },
+        {
+          "story_id": "US-0005",
+          "value": [
+            "34136ab8-1cfd-4728-a81f-4b421bd1c86f__chunk_0000"
+          ],
+          "detail": "Covers chunks: ['34136ab8-1cfd-4728-a81f-4b421bd1c86f__chunk_0000']"
+        },
+        {
+          "story_id": "US-0006",
+          "value": [
+            "34136ab8-1cfd-4728-a81f-4b421bd1c86f__chunk_0000"
+          ],
+          "detail": "Covers chunks: ['34136ab8-1cfd-4728-a81f-4b421bd1c86f__chunk_0000']"
+        },
+        {
+          "story_id": "US-0007",
+          "value": [
+            "34136ab8-1cfd-4728-a81f-4b421bd1c86f__chunk_0000"
+          ],
+          "detail": "Covers chunks: ['34136ab8-1cfd-4728-a81f-4b421bd1c86f__chunk_0000']"
+        },
+        {
+          "story_id": "US-0008",
+          "value": [
+            "34136ab8-1cfd-4728-a81f-4b421bd1c86f__chunk_0000"
+          ],
+          "detail": "Covers chunks: ['34136ab8-1cfd-4728-a81f-4b421bd1c86f__chunk_0000']"
+        },
+        {
+          "story_id": "US-0009",
+          "value": [
+            "34136ab8-1cfd-4728-a81f-4b421bd1c86f__chunk_0000"
+          ],
+          "detail": "Covers chunks: ['34136ab8-1cfd-4728-a81f-4b421bd1c86f__chunk_0000']"
+        },
+        {
+          "story_id": "US-0010",
+          "value": [
+            "34136ab8-1cfd-4728-a81f-4b421bd1c86f__chunk_0000"
+          ],
+          "detail": "Covers chunks: ['34136ab8-1cfd-4728-a81f-4b421bd1c86f__chunk_0000']"
+        },
+        {
+          "story_id": "US-0011",
+          "value": [
+            "34136ab8-1cfd-4728-a81f-4b421bd1c86f__chunk_0001"
+          ],
+          "detail": "Covers chunks: ['34136ab8-1cfd-4728-a81f-4b421bd1c86f__chunk_0001']"
+        },
+        {
+          "story_id": "US-0012",
+          "value": [
+            "34136ab8-1cfd-4728-a81f-4b421bd1c86f__chunk_0001"
+          ],
+          "detail": "Covers chunks: ['34136ab8-1cfd-4728-a81f-4b421bd1c86f__chunk_0001']"
+        },
+        {
+          "story_id": "US-0013",
+          "value": [
+            "34136ab8-1cfd-4728-a81f-4b421bd1c86f__chunk_0001"
+          ],
+          "detail": "Covers chunks: ['34136ab8-1cfd-4728-a81f-4b421bd1c86f__chunk_0001']"
+        },
+        {
+          "story_id": "US-0014",
+          "value": [
+            "34136ab8-1cfd-4728-a81f-4b421bd1c86f__chunk_0001"
+          ],
+          "detail": "Covers chunks: ['34136ab8-1cfd-4728-a81f-4b421bd1c86f__chunk_0001']"
+        },
+        {
+          "story_id": "US-0015",
+          "value": [
+            "34136ab8-1cfd-4728-a81f-4b421bd1c86f__chunk_0001"
+          ],
+          "detail": "Covers chunks: ['34136ab8-1cfd-4728-a81f-4b421bd1c86f__chunk_0001']"
+        },
+        {
+          "story_id": "US-0016",
+          "value": [
+            "34136ab8-1cfd-4728-a81f-4b421bd1c86f__chunk_0001"
+          ],
+          "detail": "Covers chunks: ['34136ab8-1cfd-4728-a81f-4b421bd1c86f__chunk_0001']"
+        },
+        {
+          "story_id": "US-0017",
+          "value": [
+            "34136ab8-1cfd-4728-a81f-4b421bd1c86f__chunk_0001"
+          ],
+          "detail": "Covers chunks: ['34136ab8-1cfd-4728-a81f-4b421bd1c86f__chunk_0001']"
+        },
+        {
+          "story_id": "US-0018",
+          "value": [
+            "34136ab8-1cfd-4728-a81f-4b421bd1c86f__chunk_0001"
+          ],
+          "detail": "Covers chunks: ['34136ab8-1cfd-4728-a81f-4b421bd1c86f__chunk_0001']"
+        },
+        {
+          "story_id": "US-0019",
+          "value": [
+            "34136ab8-1cfd-4728-a81f-4b421bd1c86f__chunk_0001"
+          ],
+          "detail": "Covers chunks: ['34136ab8-1cfd-4728-a81f-4b421bd1c86f__chunk_0001']"
+        },
+        {
+          "story_id": "US-0020",
+          "value": [
+            "34136ab8-1cfd-4728-a81f-4b421bd1c86f__chunk_0001"
+          ],
+          "detail": "Covers chunks: ['34136ab8-1cfd-4728-a81f-4b421bd1c86f__chunk_0001']"
+        },
+        {
+          "story_id": "US-0021",
+          "value": [
+            "34136ab8-1cfd-4728-a81f-4b421bd1c86f__chunk_0001"
+          ],
+          "detail": "Covers chunks: ['34136ab8-1cfd-4728-a81f-4b421bd1c86f__chunk_0001']"
+        },
+        {
+          "story_id": "US-0022",
+          "value": [
+            "34136ab8-1cfd-4728-a81f-4b421bd1c86f__chunk_0001"
+          ],
+          "detail": "Covers chunks: ['34136ab8-1cfd-4728-a81f-4b421bd1c86f__chunk_0001']"
+        },
+        {
+          "story_id": "US-0023",
+          "value": [
+            "34136ab8-1cfd-4728-a81f-4b421bd1c86f__chunk_0001"
+          ],
+          "detail": "Covers chunks: ['34136ab8-1cfd-4728-a81f-4b421bd1c86f__chunk_0001']"
+        }
+      ]
+    },
+    "diversity": {
+      "metric_name": "diversity",
+      "formula_version": "diversity_v1_category_ratio",
+      "input_count": 23,
+      "value": 0.6363636363636364,
+      "numerator": 7.0,
+      "denominator": 11.0,
+      "null_reason": null,
+      "interpretation": "7/11 unique categories represented (diversity=0.6364). Req types seen: ['dev team', 'player']. Domains seen: ['UI', 'gameplay', 'level design', 'narrative', 'systems'].",
+      "limitation": "Total possible = 11 (4 req types + 7 domains). A GDD focused on one domain will naturally score low regardless of pipeline quality. Always compare MAS vs. Baseline on the same GDD.",
+      "annotation_required": false,
+      "annotation_task": null,
+      "raw_observations": [
+        {
+          "story_id": "US-0001",
+          "value": {
+            "requirement_type": "player",
+            "game_domain": "UI"
+          },
+          "detail": "type='player', domain='UI'"
+        },
+        {
+          "story_id": "US-0002",
+          "value": {
+            "requirement_type": "player",
+            "game_domain": "systems"
+          },
+          "detail": "type='player', domain='systems'"
+        },
+        {
+          "story_id": "US-0003",
+          "value": {
+            "requirement_type": "player",
+            "game_domain": "narrative"
+          },
+          "detail": "type='player', domain='narrative'"
+        },
+        {
+          "story_id": "US-0004",
+          "value": {
+            "requirement_type": "player",
+            "game_domain": "UI"
+          },
+          "detail": "type='player', domain='UI'"
+        },
+        {
+          "story_id": "US-0005",
+          "value": {
+            "requirement_type": "player",
+            "game_domain": "gameplay"
+          },
+          "detail": "type='player', domain='gameplay'"
+        },
+        {
+          "story_id": "US-0006",
+          "value": {
+            "requirement_type": "player",
+            "game_domain": "gameplay"
+          },
+          "detail": "type='player', domain='gameplay'"
+        },
+        {
+          "story_id": "US-0007",
+          "value": {
+            "requirement_type": "player",
+            "game_domain": "level design"
+          },
+          "detail": "type='player', domain='level design'"
+        },
+        {
+          "story_id": "US-0008",
+          "value": {
+            "requirement_type": "player",
+            "game_domain": "gameplay"
+          },
+          "detail": "type='player', domain='gameplay'"
+        },
+        {
+          "story_id": "US-0009",
+          "value": {
+            "requirement_type": "dev team",
+            "game_domain": "systems"
+          },
+          "detail": "type='dev team', domain='systems'"
+        },
+        {
+          "story_id": "US-0010",
+          "value": {
+            "requirement_type": "dev team",
+            "game_domain": "systems"
+          },
+          "detail": "type='dev team', domain='systems'"
+        },
+        {
+          "story_id": "US-0011",
+          "value": {
+            "requirement_type": "player",
+            "game_domain": "systems"
+          },
+          "detail": "type='player', domain='systems'"
+        },
+        {
+          "story_id": "US-0012",
+          "value": {
+            "requirement_type": "player",
+            "game_domain": "systems"
+          },
+          "detail": "type='player', domain='systems'"
+        },
+        {
+          "story_id": "US-0013",
+          "value": {
+            "requirement_type": "player",
+            "game_domain": "systems"
+          },
+          "detail": "type='player', domain='systems'"
+        },
+        {
+          "story_id": "US-0014",
+          "value": {
+            "requirement_type": "player",
+            "game_domain": "systems"
+          },
+          "detail": "type='player', domain='systems'"
+        },
+        {
+          "story_id": "US-0015",
+          "value": {
+            "requirement_type": "player",
+            "game_domain": "narrative"
+          },
+          "detail": "type='player', domain='narrative'"
+        },
+        {
+          "story_id": "US-0016",
+          "value": {
+            "requirement_type": "player",
+            "game_domain": "gameplay"
+          },
+          "detail": "type='player', domain='gameplay'"
+        },
+        {
+          "story_id": "US-0017",
+          "value": {
+            "requirement_type": "player",
+            "game_domain": "systems"
+          },
+          "detail": "type='player', domain='systems'"
+        },
+        {
+          "story_id": "US-0018",
+          "value": {
+            "requirement_type": "player",
+            "game_domain": "systems"
+          },
+          "detail": "type='player', domain='systems'"
+        },
+        {
+          "story_id": "US-0019",
+          "value": {
+            "requirement_type": "player",
+            "game_domain": "systems"
+          },
+          "detail": "type='player', domain='systems'"
+        },
+        {
+          "story_id": "US-0020",
+          "value": {
+            "requirement_type": "player",
+            "game_domain": "systems"
+          },
+          "detail": "type='player', domain='systems'"
+        },
+        {
+          "story_id": "US-0021",
+          "value": {
+            "requirement_type": "player",
+            "game_domain": "gameplay"
+          },
+          "detail": "type='player', domain='gameplay'"
+        },
+        {
+          "story_id": "US-0022",
+          "value": {
+            "requirement_type": "player",
+            "game_domain": "systems"
+          },
+          "detail": "type='player', domain='systems'"
+        },
+        {
+          "story_id": "US-0023",
+          "value": {
+            "requirement_type": "player",
+            "game_domain": "gameplay"
+          },
+          "detail": "type='player', domain='gameplay'"
+        }
+      ]
+    },
+    "model_config_snapshot": {
+      "provider": "gemini",
+      "model_name": "gemini-3.5-flash-lite",
+      "temperature": 0,
+      "top_p": null,
+      "response_format": "json_object",
+      "max_retries": 5,
+      "max_reviewer_iterations": null,
+      "wait_on_overload_seconds": 10
+    },
+    "prompt_config_snapshot": {},
+    "pipeline_output_ref": "outputs\\run-20260924-234638",
+    "evaluated_at": "2026-09-25T03:43:15.206408+00:00"
+  },
+  "controlled_conditions": {
+    "same_source_document": true,
+    "mas_document_id": "doombible",
+    "baseline_document_id": "34136ab8-1cfd-4728-a81f-4b421bd1c86f",
+    "note_document_id_mismatch": "MAS uses a short document_id ('doombible') while Baseline uses the preprocessing UUID. Both refer to the same physical GDD file.",
+    "mas_model": "unknown",
+    "baseline_model": "gemini-3.5-flash-lite",
+    "same_model": false,
+    "mas_run_id": "73d5386c-ce3c-459a-a03c-8472fe65025f",
+    "baseline_run_id": "run-20260924-234638",
+    "mas_started_at": "2026-09-24T13:23:28.735483Z",
+    "mas_completed_at": "2026-09-24T13:25:43.734302Z",
+    "baseline_started_at": "2026-09-24T16:46:41.916938Z",
+    "baseline_completed_at": "2026-09-24T16:48:28.293507Z",
+    "mas_status": "completed",
+    "baseline_status": "completed"
+  },
+  "annotation_tasks": [
+    {
+      "task_key": "hallucination_rate_ground_truth",
+      "metric_name": "hallucination_rate_ground_truth",
+      "reason": "Automatic hallucination detection (keyword overlap, LLM self-check) has known limitations: (a) keyword heuristics miss paraphrasing; (b) LLM-based checks have circular bias (same model generates and judges). Ground-truth hallucination rate requires a domain expert to inspect each story against the source GDD text.",
+      "instructions": "For each user story, a human annotator must:\n1. Read the story's full_text.\n2. Read the source_chunk text referenced by source_chunk_ids.\n3. Judge: Is the story's action and benefit SUPPORTED by the source chunk (or is it fabricated/extrapolated beyond the text)?\n4. Record: story_id, is_hallucinated (bool), confidence (high/medium/low), and a one-sentence justification.\n5. Two independent annotators required; resolve disagreements via adjudication.",
+      "annotation_schema": {
+        "story_id": "str — FinalUserStory.id",
+        "is_hallucinated": "bool — True if action/benefit not supported by source",
+        "confidence": "Literal['high','medium','low']",
+        "justification": "str — one-sentence rationale",
+        "annotator_id": "str — anonymized annotator identifier"
+      },
+      "status": "pending"
+    },
+    {
+      "task_key": "redundancy_ground_truth",
+      "metric_name": "redundancy_ground_truth",
+      "reason": "Automatic Jaccard-based redundancy uses lexical overlap and may miss semantic duplicates (same requirement expressed differently) or falsely flag stories that share domain vocabulary but express distinct requirements.",
+      "instructions": "For each pair of user stories from the SAME pipeline run, a human annotator must:\n1. Read both stories' full_text.\n2. Judge: Are these stories expressing the SAME functional requirement (redundant) or distinct requirements?\n3. Record: story_id_a, story_id_b, is_redundant (bool), confidence (high/medium/low), justification.\nNOTE: Only flag as redundant if both stories would be satisfied by implementing the same feature. Near-synonyms but different scopes are NOT redundant.",
+      "annotation_schema": {
+        "story_id_a": "str",
+        "story_id_b": "str",
+        "is_redundant": "bool",
+        "confidence": "Literal['high','medium','low']",
+        "justification": "str",
+        "annotator_id": "str"
+      },
+      "status": "pending"
+    }
+  ],
+  "pipeline_version": "gdd-userstory-mas-0.1.0",
+  "evaluation_pipeline_version": "eval-pipeline-1.0.0",
+  "created_at": "2026-09-25T03:43:15.206408+00:00",
+  "notes": [
+    "NOTE: MAS pipeline produced 0 final stories. This is likely due to API errors (503 Service Unavailable) during the generator-reviewer loop. All MAS metrics except those requiring >0 stories will be null or show 0% coverage.",
+    "IMPORTANT: Hallucination rates computed here are AUTOMATIC APPROXIMATIONS and must be validated by human annotation (see annotation_tasks). MAS uses reviewer_traceability_confirmed signal (same-LLM bias). Baseline uses keyword overlap heuristic (may over-flag paraphrasing).",
+    "Baseline redundancy uses Jaccard similarity on action+benefit token sets (threshold=0.70). This is a lexical approximation; see annotation_tasks for ground-truth redundancy annotation instructions."
+  ]
+}
