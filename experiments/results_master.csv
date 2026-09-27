@@ -1,0 +1,1 @@
+run_id,kondisi,gdd_filename,tanggal,model_name,temperature,total_chunks,total_stories,aqusa_score,coverage,diversity,redundancy_rate,hallucination_rate,git_commit_sha,pdf_sha256,status,catatan
