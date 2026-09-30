@@ -178,14 +178,46 @@ def _load_mas_final_stories(
     """
     Attempt to reconstruct final story list from MAS run.
 
-    Strategy:
-    1. Use final_user_story_ids from experiment_run.json to find stories.
-    2. Search generator_reviewer/ subdirs for story JSONs.
-    3. Return whatever stories are found (list may be empty if pipeline errored).
+    Strategy (in order of preference):
+    1. Read ``final_stories.jsonl`` from the run root — the canonical output
+       written by the MAS pipeline at completion.
+    2. Fall back to searching ``generator_reviewer/`` subdirectories for
+       ``iteration_*.json`` files — used for older run layouts.
+    3. Return whatever stories are found (empty list if pipeline errored).
     """
     final_ids = set(experiment_run.get("final_user_story_ids", []))
-    stories: Dict[str, Dict] = {}
 
+    # ── Strategy 1: read final_stories.jsonl (canonical output) ───────────────
+    final_jsonl = run_dir / "final_stories.jsonl"
+    if final_jsonl.exists():
+        result: List[Dict] = []
+        try:
+            with open(final_jsonl, encoding="utf-8") as fh:
+                for line in fh:
+                    line = line.strip()
+                    if not line:
+                        continue
+                    try:
+                        s = json.loads(line)
+                    except json.JSONDecodeError:
+                        logger.warning(
+                            "Skipping malformed line in %s", final_jsonl
+                        )
+                        continue
+                    sid = s.get("id", "")
+                    if sid and (not final_ids or sid in final_ids):
+                        result.append(s)
+        except OSError as exc:
+            logger.warning("Could not read %s: %s", final_jsonl, exc)
+        if result:
+            logger.info(
+                "Loaded %d stories from final_stories.jsonl (run: %s)",
+                len(result), run_dir.name,
+            )
+            return result
+
+    # ── Strategy 2: generator_reviewer/ subdirectory layout (legacy) ──────────
+    stories: Dict[str, Dict] = {}
     gr_dir = run_dir / "generator_reviewer"
     if gr_dir.exists():
         for chunk_dir in gr_dir.iterdir():
