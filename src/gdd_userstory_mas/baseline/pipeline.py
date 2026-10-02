@@ -298,6 +298,7 @@ class BaselinePipeline:
         # ── Process chunks ─────────────────────────────────────────────────────
         sorted_chunks = sorted(chunks, key=lambda c: c.position)
         story_counter = 0
+        chunks_skipped = 0  # whole chunks skipped (LLMMalformedOutputError)
 
         for chunk in sorted_chunks:
             try:
@@ -317,7 +318,9 @@ class BaselinePipeline:
                     f"LLM API failure on chunk {chunk.chunk_id}: {exc}"
                 ) from exc
             except LLMMalformedOutputError as exc:
-                # Malformed output — skip this chunk, continue
+                # Malformed output — skip this entire chunk, continue
+                # Counts as a skipped chunk (affects status → partially_completed)
+                chunks_skipped += 1
                 err = self._make_error(
                     rid, document_id, "malformed_output",
                     str(exc), "excluded_and_logged",
@@ -350,6 +353,7 @@ class BaselinePipeline:
                     stories.append(story)
                     story_counter += 1
                 except ValidationError as exc:
+                    # Per-story schema error — story excluded but chunk still counted
                     err = self._make_error(
                         rid, document_id, "schema_violation",
                         f"FinalUserStory validation failed: {exc}",
@@ -360,8 +364,9 @@ class BaselinePipeline:
                     if self._logger:
                         self._logger.log_error(err)
 
-            # Log skipped stories
+            # Log skipped individual stories (parse errors inside a valid chunk response)
             for bad in result.invalid_stories:
+                # Per-story error — does NOT count as a skipped chunk
                 err = self._make_error(
                     rid, document_id, "malformed_output",
                     f"Invalid story in chunk {chunk.chunk_id}: {bad.parse_errors}",
@@ -387,7 +392,12 @@ class BaselinePipeline:
                     self._logger.log_error(err)
 
         # ── Update ExperimentRun ───────────────────────────────────────────────
-        experiment_run.status = "partially_completed" if errors else "completed"
+        # Status rules:
+        #   completed          → all chunks processed; only per-story minor errors allowed
+        #   partially_completed → one or more entire chunks were skipped (LLMMalformedOutputError)
+        #   failed             → fatal LLMAPIError (set earlier, run was halted)
+        if experiment_run.status != "failed":
+            experiment_run.status = "partially_completed" if chunks_skipped > 0 else "completed"
         experiment_run.completed_at = datetime.now(tz=timezone.utc)
         experiment_run.final_user_story_ids = [s.id for s in stories]
         experiment_run.error_log_refs = [e.error_id for e in errors]

@@ -348,3 +348,41 @@ class TestBaselinePipelineRun:
 
         assert result.validation_report is not None
         assert result.validation_report.total_stories >= 0
+
+    def test_status_completed_when_only_per_story_errors(self, prompt_file: Path) -> None:
+        """Per-story parse errors (invalid individual stories) must NOT cause
+        partially_completed. Only skipped whole chunks trigger that status."""
+        pipeline = self._build_pipeline(prompt_file)
+        chunks = _make_chunks(2)
+        # Both chunks processed; chunk 0 has 1 valid + 1 invalid story
+        results = [
+            _make_agent_result(chunks[0].chunk_id, valid_count=1, invalid_count=1),
+            _make_agent_result(chunks[1].chunk_id, valid_count=1, invalid_count=0),
+        ]
+
+        with patch("gdd_userstory_mas.baseline.pipeline.LLMClient"), \
+             patch("gdd_userstory_mas.baseline.pipeline.BaselineAgent") as MockAgent:
+            MockAgent.return_value = _patch_agent(results)
+            result = pipeline.run(chunks, document_id=DOC_ID)
+
+        # Errors exist (invalid story logged) but status must be completed
+        assert len(result.errors) >= 1
+        assert result.experiment_run.status == "completed"
+
+    def test_status_partially_completed_when_chunk_skipped(self, prompt_file: Path) -> None:
+        """A LLMMalformedOutputError on a whole chunk must set status to
+        partially_completed because an entire chunk was not processed."""
+        pipeline = self._build_pipeline(prompt_file)
+        chunks = _make_chunks(2)
+
+        with patch("gdd_userstory_mas.baseline.pipeline.LLMClient"), \
+             patch("gdd_userstory_mas.baseline.pipeline.BaselineAgent") as MockAgent:
+            mock_agent = MagicMock()
+            mock_agent.process_chunk.side_effect = [
+                LLMMalformedOutputError("bad json on whole chunk"),  # chunk 0 — whole skip
+                _make_agent_result(chunks[1].chunk_id, 1),           # chunk 1 — ok
+            ]
+            MockAgent.return_value = mock_agent
+            result = pipeline.run(chunks, document_id=DOC_ID)
+
+        assert result.experiment_run.status == "partially_completed"
