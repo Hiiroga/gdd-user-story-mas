@@ -19,8 +19,9 @@ Design decisions:
 
 Currently supported providers:
   - ``openai``    — uses ``openai`` SDK (openai>=1.0)
+  - ``groq``      — uses ``groq`` SDK (groq>=1.0); OpenAI-compatible interface
   - ``anthropic`` — uses ``anthropic`` SDK
-  - ``gemini``    — uses ``google-generativeai`` SDK (stub only for now)
+  - ``gemini``    — uses ``google-genai`` SDK
 
 For unit testing WITHOUT hitting a real API, pass a ``mock_response``
 fixture — see ``_MockLLMClient`` pattern in tests.
@@ -31,7 +32,9 @@ import json
 import logging
 import time
 from dataclasses import dataclass
-from typing import Any, Dict, Optional
+import os
+import threading
+from typing import Any, Dict, List, Optional, Tuple
 
 logger = logging.getLogger(__name__)
 
@@ -67,23 +70,73 @@ class LLMResponse:
     raw_response: Any = None
 
 
+# ── Multi-Key Pool ─────────────────────────────────────────────────────────────
+
+class APIKeyPool:
+    """
+    Thread-safe API key pool for round-robin rotation and automatic failover.
+    Shared across all LLMClient instances to distribute load fairly across accounts.
+    """
+
+    def __init__(self, keys: List[str], provider: str) -> None:
+        self.keys = [k.strip() for k in keys if k.strip()]
+        self.provider = provider
+        self._lock = threading.Lock()
+        self._index = 0
+        self._cooldowns: Dict[str, float] = {}  # key -> cooldown expiry timestamp
+        self._clients: Dict[str, Any] = {}      # key -> cached provider client
+
+    def get_client(self, builder_fn: Any) -> Tuple[str, float, Any]:
+        """
+        Get the next available key and its client.
+        Returns (key, wait_time, client). If wait_time > 0, all keys are in cooldown.
+        """
+        with self._lock:
+            now = time.time()
+            if not self.keys:
+                return "", 0.0, builder_fn("")
+
+            available = [k for k in self.keys if self._cooldowns.get(k, 0) <= now]
+            if not available:
+                earliest_key = min(self.keys, key=lambda k: self._cooldowns.get(k, 0))
+                wait_time = max(0.0, self._cooldowns[earliest_key] - now)
+                return earliest_key, wait_time, self._get_or_build(earliest_key, builder_fn)
+
+            key = available[self._index % len(available)]
+            self._index += 1
+            return key, 0.0, self._get_or_build(key, builder_fn)
+
+    def mark_cooldown(self, key: str, duration: float) -> None:
+        """Mark a specific key in cooldown due to 429 rate limit."""
+        with self._lock:
+            self._cooldowns[key] = time.time() + duration
+
+    def _get_or_build(self, key: str, builder_fn: Any) -> Any:
+        if key not in self._clients:
+            self._clients[key] = builder_fn(key)
+        return self._clients[key]
+
+
+_GLOBAL_KEY_POOLS: Dict[str, APIKeyPool] = {}
+
+
 # ── LLMClient ──────────────────────────────────────────────────────────────────
 
 class LLMClient:
     """
-    Thin, provider-agnostic LLM client with retry logic.
+    Thin, provider-agnostic LLM client with multi-key rotation and retry logic.
 
     Parameters
     ----------
     provider:
-        One of ``"openai"``, ``"anthropic"``, ``"gemini"``.
+        One of ``"openai"``, ``"groq"``, ``"anthropic"``, ``"gemini"``.
     model_name:
-        The model identifier string (e.g., ``"gpt-4o"``).
+        The model identifier string (e.g., ``"gemini-3.5-flash-lite"``).
     api_key:
-        API key.  If ``None``, the client attempts to read from the
-        standard environment variable for the provider.
+        API key or comma-separated list of keys for multi-account rotation.
+        If ``None``, reads from standard environment variables (e.g. LLM_API_KEY).
     temperature:
-        Sampling temperature.  Use 0 for maximum reproducibility.
+        Sampling temperature. Use 0 for maximum reproducibility.
     max_tokens:
         Maximum completion tokens.
     response_format:
@@ -111,7 +164,6 @@ class LLMClient:
     ) -> None:
         self.provider = provider.lower()
         self.model_name = model_name
-        self.api_key = api_key
         self.temperature = temperature
         self.max_tokens = max_tokens
         self.top_p = top_p
@@ -120,9 +172,20 @@ class LLMClient:
         self.retry_backoff_seconds = retry_backoff_seconds
         self.min_request_interval_seconds = min_request_interval_seconds
         self.wait_on_overload_seconds = wait_on_overload_seconds
-        self._last_call_time: float = 0.0  # unix timestamp of last successful call
+        self._last_call_time: float = 0.0
 
-        self._client: Any = self._build_client()
+        # Multi-key parsing: support comma-separated keys or single key
+        raw_key = api_key or os.getenv("LLM_API_KEY") or os.getenv("GEMINI_API_KEY") or ""
+        self.api_keys = [k.strip() for k in raw_key.split(",") if k.strip()]
+        if not self.api_keys:
+            self.api_keys = [raw_key]
+        self.api_key = self.api_keys[0]
+
+        pool_id = f"{self.provider}::{','.join(self.api_keys)}"
+        if pool_id not in _GLOBAL_KEY_POOLS:
+            _GLOBAL_KEY_POOLS[pool_id] = APIKeyPool(self.api_keys, self.provider)
+        self._pool = _GLOBAL_KEY_POOLS[pool_id]
+        self._client: Any = None
 
     # ── Public API ─────────────────────────────────────────────────────────────
 
@@ -133,43 +196,44 @@ class LLMClient:
     ) -> LLMResponse:
         """
         Send a system + user message and return a normalised response.
-
-        Handles three retry strategies:
-
-        - **429 RESOURCE_EXHAUSTED**: waits the retryDelay from the API
-          response, then retries. Does NOT consume ``max_retries`` budget.
-        - **503 UNAVAILABLE** (model overloaded): waits longer, also does NOT
-          consume ``max_retries`` budget.
-        - **All other errors**: exponential back-off, capped at ``max_retries``.
-
-        Also throttles to ``min_request_interval_seconds`` between calls.
-
-        Raises
-        ------
-        LLMAPIError
-            If all retries are exhausted.
-        LLMMalformedOutputError
-            If the provider returns a non-parseable response when JSON mode
-            was requested.
+        Distributes calls across the APIKeyPool with round-robin and auto-failover on 429.
         """
         last_exc: Optional[Exception] = None
         backoff = self.retry_backoff_seconds
         regular_attempts = 0  # only counts non-429/503 failures
 
-        # ── Per-call throttle ───────────────────────────────────────────────
-        if self.min_request_interval_seconds > 0:
-            elapsed = time.time() - self._last_call_time
-            wait = self.min_request_interval_seconds - elapsed
-            if wait > 0:
-                logger.debug("Rate-limit throttle: sleeping %.1fs", wait)
-                time.sleep(wait)
+        # Effective per-call throttle: divided across number of keys in pool
+        pool_size = max(1, len(self._pool.keys))
+        effective_interval = (
+            self.min_request_interval_seconds / pool_size
+            if self.min_request_interval_seconds > 0
+            else 0.0
+        )
 
         while True:
+            # ── Per-call throttle ───────────────────────────────────────────
+            if effective_interval > 0:
+                elapsed = time.time() - self._last_call_time
+                wait = effective_interval - elapsed
+                if wait > 0:
+                    time.sleep(wait)
+
+            active_key, pool_wait, active_client = self._pool.get_client(self._build_client)
+            if pool_wait > 0:
+                logger.warning(
+                    "All %d API keys in cooldown! Waiting %.1fs for earliest key to cool down…",
+                    len(self._pool.keys), pool_wait,
+                )
+                time.sleep(pool_wait)
+                continue
+
+            self._client = active_client
             regular_attempts += 1
             try:
                 logger.debug(
-                    "LLM call attempt %d (provider=%s, model=%s)",
+                    "LLM call attempt %d (provider=%s, model=%s, key=%s…)",
                     regular_attempts, self.provider, self.model_name,
+                    active_key[:8] if active_key else "none",
                 )
                 response = self._dispatch(system_prompt, user_message)
                 self._last_call_time = time.time()
@@ -183,22 +247,23 @@ class LLMClient:
             except Exception as exc:  # noqa: BLE001
                 exc_str = str(exc)
 
-                # ── 429 RESOURCE_EXHAUSTED — wait and retry, free attempt ──
-                retry_after = _parse_retry_after(exc)
-                if retry_after is not None:
+                # ── 429 RESOURCE_EXHAUSTED — rotate key immediately ──────
+                if "429" in exc_str or "RESOURCE_EXHAUSTED" in exc_str:
+                    retry_after = _parse_retry_after(exc)
+                    retry_duration = retry_after if retry_after is not None else 60.0
                     logger.warning(
-                        "429 rate-limit — API requests %.0fs wait. Sleeping (free retry)…",
-                        retry_after,
+                        "429 rate-limit on key %s… (cooldown %.0fs). Rotating to next key in pool…",
+                        active_key[:8] if active_key else "", retry_duration,
                     )
-                    time.sleep(retry_after + 2)
+                    self._pool.mark_cooldown(active_key, retry_duration + 2.0)
                     regular_attempts -= 1  # restore — 429 is not our error
                     continue
 
                 # ── 503 UNAVAILABLE — model overloaded, wait and free retry ─
                 if "503" in exc_str or "UNAVAILABLE" in exc_str:
                     logger.warning(
-                        "503 model overloaded — sleeping %.0fs (free retry)…",
-                        self.wait_on_overload_seconds,
+                        "503 model overloaded on key %s… — sleeping %.0fs (free retry)…",
+                        active_key[:8] if active_key else "", self.wait_on_overload_seconds,
                     )
                     time.sleep(self.wait_on_overload_seconds)
                     regular_attempts -= 1  # restore
@@ -223,7 +288,7 @@ class LLMClient:
     # ── Internal dispatch ──────────────────────────────────────────────────────
 
     def _dispatch(self, system_prompt: str, user_message: str) -> LLMResponse:
-        if self.provider == "openai":
+        if self.provider in ("openai", "groq"):  # groq SDK is OpenAI-compatible
             return self._call_openai(system_prompt, user_message)
         if self.provider == "anthropic":
             return self._call_anthropic(system_prompt, user_message)
@@ -231,12 +296,22 @@ class LLMClient:
             return self._call_gemini(system_prompt, user_message)
         raise LLMAPIError(f"Unknown provider: '{self.provider}'")
 
-    def _build_client(self) -> Any:
-        """Initialise and return the provider SDK client (lazy import)."""
+    def _build_client(self, key: Optional[str] = None) -> Any:
+        """Initialise and return the provider SDK client for a given key (lazy import)."""
+        target_key = key if key is not None else self.api_key
+        if self.provider == "groq":
+            try:
+                from groq import Groq  # noqa: PLC0415
+                return Groq(api_key=target_key)
+            except ImportError as exc:
+                raise ImportError(
+                    "groq SDK not installed. Run: pip install groq"
+                ) from exc
+
         if self.provider == "openai":
             try:
                 import openai  # noqa: PLC0415
-                return openai.OpenAI(api_key=self.api_key)
+                return openai.OpenAI(api_key=target_key)
             except ImportError as exc:
                 raise ImportError(
                     "openai SDK not installed. Run: pip install openai>=1.0"
@@ -245,7 +320,7 @@ class LLMClient:
         if self.provider == "anthropic":
             try:
                 import anthropic  # noqa: PLC0415
-                return anthropic.Anthropic(api_key=self.api_key)
+                return anthropic.Anthropic(api_key=target_key)
             except ImportError as exc:
                 raise ImportError(
                     "anthropic SDK not installed. Run: pip install anthropic"
@@ -254,7 +329,7 @@ class LLMClient:
         if self.provider == "gemini":
             try:
                 from google import genai  # noqa: PLC0415
-                return genai.Client(api_key=self.api_key)
+                return genai.Client(api_key=target_key)
             except ImportError as exc:
                 raise ImportError(
                     "google-genai SDK not installed. Run: pip install google-genai>=1.0"

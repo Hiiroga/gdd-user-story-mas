@@ -10,7 +10,7 @@
 #     granularity as MAS per-chunk Reader agent calls).
 
 model:
-  # LLM provider adapter to use.  Supported values: openai | anthropic | gemini
+  # LLM provider adapter to use.  Supported values: openai | groq | anthropic | gemini
   # Must match the LLM used for MAS agents (FR-027, OPEN-002).
   provider: "gemini"
 
@@ -36,16 +36,15 @@ invocation:
   strategy: "per_chunk"
 
   # Maximum retries on LLM API failure or malformed output (Tech Arch §10).
-  # Increased to handle 429 waits (each 429 retry waits ~60s before retrying).
   max_retries: 5
   retry_backoff_seconds: 2
 
-  # Minimum seconds between LLM calls (free tier = 15 RPM).
+  # Minimum seconds between LLM calls.
+  # Gemini Free tier = 15 RPM → 60s / 15 = 4s minimum. Use 4.0s for safety.
   # Set to 0.0 jika pakai paid tier.
-  min_request_interval_seconds: 5
+  min_request_interval_seconds: 4.0
 
   # Seconds to wait on 503 "model overloaded" before retrying.
-  # Nilai lebih besar = lebih sabar saat server Gemini sibuk.
   wait_on_overload_seconds: 10
 
   # Maximum stories to extract per chunk (soft hint to the LLM).

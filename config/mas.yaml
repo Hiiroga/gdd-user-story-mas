@@ -10,7 +10,7 @@
 # a different model (not currently planned), add a per-agent override section.
 
 model:
-  # LLM provider adapter.  Supported: openai | anthropic | gemini
+  # LLM provider adapter.  Supported: openai | groq | anthropic | gemini
   # Must match baseline.yaml provider (FR-027, OPEN-002).
   provider: "gemini"
 
@@ -32,9 +32,9 @@ invocation:
   retry_backoff_seconds: 2
 
   # Minimum seconds between consecutive LLM calls per agent instance.
-  # Free tier Gemini 3.5 Flash Lite = 15 RPM → 60s / 15 = 4s minimum. Use 5s for safety.
+  # Gemini Free tier = 15 RPM → 60s / 15 = 4s minimum. Use 4.0s for safety.
   # Set to 0.0 for paid tier.
-  min_request_interval_seconds: 5
+  min_request_interval_seconds: 4.0
 
   # Seconds to wait on 503 UNAVAILABLE before retrying.
   wait_on_overload_seconds: 10
