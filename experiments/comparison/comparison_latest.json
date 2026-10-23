@@ -7021,7 +7021,7 @@
     "model_config_snapshot": {},
     "prompt_config_snapshot": {},
     "pipeline_output_ref": "outputs\\mas-fix-new",
-    "evaluated_at": "2026-10-08T20:05:54.994975+00:00"
+    "evaluated_at": "2026-10-09T05:37:20.029324+00:00"
   },
   "baseline": {
     "pipeline_type": "Baseline",
@@ -16296,7 +16296,7 @@
     },
     "prompt_config_snapshot": {},
     "pipeline_output_ref": "outputs\\single-fix-new",
-    "evaluated_at": "2026-10-08T20:05:55.073274+00:00"
+    "evaluated_at": "2026-10-09T05:37:20.398303+00:00"
   },
   "controlled_conditions": {
     "same_source_document": true,
@@ -16348,7 +16348,7 @@
   ],
   "pipeline_version": "gdd-userstory-mas-0.1.0",
   "evaluation_pipeline_version": "eval-pipeline-1.0.0",
-  "created_at": "2026-10-08T20:05:55.073274+00:00",
+  "created_at": "2026-10-09T05:37:20.398303+00:00",
   "notes": [
     "IMPORTANT: Hallucination rates computed here are AUTOMATIC APPROXIMATIONS and must be validated by human annotation (see annotation_tasks). MAS uses reviewer_traceability_confirmed signal (same-LLM bias). Baseline uses keyword overlap heuristic (may over-flag paraphrasing).",
     "Baseline redundancy uses Jaccard similarity on action+benefit token sets (threshold=0.70). This is a lexical approximation; see annotation_tasks for ground-truth redundancy annotation instructions."
